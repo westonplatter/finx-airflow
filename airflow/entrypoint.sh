@@ -176,7 +176,7 @@ function set_pythonpath_for_root_user() {
     fi
 }
 
-function wait_for_airflow_db() {
+function wait_for_aiflow_db() {
     # Wait for the command to run successfully to validate the database connection.
     run_check_with_retries "airflow db check"
 }

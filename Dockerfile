@@ -1,8 +1,40 @@
 FROM conda/miniconda3 AS builder
 
-RUN apt-get update && \
-	apt-get install -y \
-	build-essential
+# Make sure noninteractive debian install is used and language variables set
+ENV DEBIAN_FRONTEND=noninteractive LANGUAGE=C.UTF-8 LANG=C.UTF-8 LC_ALL=C.UTF-8 \
+    LC_CTYPE=C.UTF-8 LC_MESSAGES=C.UTF-8
+
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends \
+	apt-transport-https \
+	apt-utils \
+	build-essential \
+	ca-certificates \
+	curl \
+	dumb-init \
+	freetds-bin \
+	freetds-dev \
+	gnupg2 \
+	ldap-utils \
+	libffi-dev \
+	libkrb5-dev \
+	libldap2-dev \
+	libpq-dev \
+	libsasl2-2 \
+	libsasl2-dev \
+	libsasl2-modules \
+	libssl-dev \
+	openssh-client \
+	postgresql-client \
+	software-properties-common \
+	sqlite3 \
+	sudo \
+	unixodbc \
+	unixodbc-dev \
+	yarn \
+    && apt-get autoremove -yqq --purge \
+    && apt-get clean
+
 
 FROM builder AS airflow
 COPY environment.yml environment.yml
@@ -14,45 +46,16 @@ ARG AIRFLOW_USER_HOME_DIR=/home/airflow
 
 WORKDIR ${AIRFLOW_HOME}
 
-# Make sure noninteractive debian install is used and language variables set
-ENV DEBIAN_FRONTEND=noninteractive LANGUAGE=C.UTF-8 LANG=C.UTF-8 LC_ALL=C.UTF-8 \
-    LC_CTYPE=C.UTF-8 LC_MESSAGES=C.UTF-8
-
-
-RUN apt-get update \
-	&& apt-get install -y --no-install-recommends \
-		apt-transport-https \
-	     	apt-utils \
-	     	build-essential \
-		ca-certificates \
-        	curl \
-		gnupg2 \
-		freetds-bin \
-		freetds-dev \
-		ldap-utils \
-		libffi-dev \
-		libkrb5-dev \
-		libldap2-dev \
-		libpq-dev \
-		libsasl2-2 \
-		libsasl2-dev \
-		libsasl2-modules \
-		libssl-dev \
-		openssh-client \
-		postgresql-client \
-		software-properties-common \
-		sqlite3 \
-		sudo \
-		unixodbc \
-		unixodbc-dev \
-		yarn \
-    && apt-get autoremove -yqq --purge \
-    && apt-get clean
 
 # fix permission issue in Azure DevOps when running the scripts
-RUN adduser --quiet "airflow" --uid "${AIRFLOW_UID}" --gid "0" --home "${AIRFLOW_USER_HOME_DIR}" && \
-# Make Airflow files belong to the root group and are accessible. This is to accommodate the guidelines from
-# OpenShift https://docs.openshift.com/enterprise/3.0/creating_images/guidelines.html
+RUN adduser \
+	--quiet "airflow" \
+	--uid "${AIRFLOW_UID}" \
+	--gid "0" \
+	--home "${AIRFLOW_USER_HOME_DIR}" && \
+    # Make Airflow files belong to the root group and are accessible.
+    # This is to accommodate the guidelines from OpenShift
+    # https://docs.openshift.com/enterprise/3.0/creating_images/guidelines.html
     mkdir -pv "${AIRFLOW_HOME}"; \
     mkdir -pv "${AIRFLOW_HOME}/dags"; \
     mkdir -pv "${AIRFLOW_HOME}/logs"; \
@@ -88,5 +91,8 @@ ENV DUMB_INIT_SETSID="1"
 # This overhead is not happening for binaries that already link dynamically libstdc++
 ENV LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
 
-#ENTRYPOINT ["/usr/bin/dumb-init", "--", "/entrypoint"]
+RUN mkdir -p /home/airflow/airflow
+COPY airflow/airflow.cfg /home/airflow/airflow/airflow.cfg
+
+ENTRYPOINT ["/usr/bin/dumb-init", "--", "/entrypoint"]
 CMD []
