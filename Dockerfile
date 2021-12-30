@@ -15,6 +15,7 @@ RUN apt-get install -y --no-install-recommends \
 	freetds-bin \
 	freetds-dev \
 	gnupg2 \
+	gosu \
 	ldap-utils \
 	libffi-dev \
 	libkrb5-dev \
@@ -93,6 +94,7 @@ ENV LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
 
 RUN mkdir -p /home/airflow/airflow
 COPY airflow/airflow.cfg /home/airflow/airflow/airflow.cfg
+COPY airflow/webserver_config.py /home/airflow/airflow/webserver_config.py
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "/entrypoint"]
 CMD []
