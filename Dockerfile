@@ -58,11 +58,12 @@ RUN adduser \
     # This is to accommodate the guidelines from OpenShift
     # https://docs.openshift.com/enterprise/3.0/creating_images/guidelines.html
     mkdir -pv "${AIRFLOW_HOME}"; \
-    mkdir -pv "${AIRFLOW_HOME}/dags"; \
-    mkdir -pv "${AIRFLOW_HOME}/logs"; \
     chown -R "airflow:root" "${AIRFLOW_USER_HOME_DIR}" "${AIRFLOW_HOME}"; \
     find "${AIRFLOW_HOME}" -executable -print0 | xargs --null chmod g+x && \
         find "${AIRFLOW_HOME}" -print0 | xargs --null chmod g+rw
+
+    #mkdir -pv "${AIRFLOW_HOME}/dags"; \
+    #mkdir -pv "${AIRFLOW_HOME}/logs"; \
 
 #COPY --chown=airflow:root --from=airflow-build-image /root/.local "${AIRFLOW_USER_HOME_DIR}/.local"
 COPY --chown=airflow:root airflow/entrypoint.sh /entrypoint
