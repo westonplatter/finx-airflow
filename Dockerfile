@@ -25,6 +25,7 @@ RUN apt-get install -y --no-install-recommends \
 	libsasl2-dev \
 	libsasl2-modules \
 	libssl-dev \
+	netcat \
 	openssh-client \
 	postgresql-client \
 	software-properties-common \
@@ -36,17 +37,19 @@ RUN apt-get install -y --no-install-recommends \
     && apt-get autoremove -yqq --purge \
     && apt-get clean
 
+RUN conda update conda
+RUN conda install mkl
 
 FROM builder AS airflow
 COPY environment.yml environment.yml
 RUN conda env update --name base --file environment.yml
+RUN pip install celery redis
 
 ARG AIRFLOW_HOME=/opt/airflow
 ARG AIRFLOW_UID="50000"
 ARG AIRFLOW_USER_HOME_DIR=/home/airflow
 
 WORKDIR ${AIRFLOW_HOME}
-
 
 # fix permission issue in Azure DevOps when running the scripts
 RUN adduser \
@@ -76,7 +79,8 @@ RUN chmod a+x /entrypoint /clean-logs && \
     chmod g=u /etc/passwd
 
 RUN usermod -g 0 airflow -G 0
-USER ${AIRFLOW_UID}
+#USER ${AIRFLOW_UID}
+USER airflow
 
 EXPOSE 8080
 
@@ -93,7 +97,6 @@ ENV DUMB_INIT_SETSID="1"
 # This overhead is not happening for binaries that already link dynamically libstdc++
 ENV LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
 
-RUN mkdir -p /home/airflow/airflow
 COPY airflow/airflow.cfg /home/airflow/airflow/airflow.cfg
 COPY airflow/webserver_config.py /home/airflow/airflow/webserver_config.py
 
