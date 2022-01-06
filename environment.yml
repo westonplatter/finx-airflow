@@ -9,3 +9,4 @@ dependencies:
   - pip
   - pip:
     - apache-airflow >= 2.2
+    - celery
