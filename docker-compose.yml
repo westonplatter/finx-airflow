@@ -1,5 +1,5 @@
 ---
-version: '3'
+version: '3.7'
 
 x-airflow-common:
   &airflow-common
@@ -7,15 +7,14 @@ x-airflow-common:
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
-    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://vifo@localhost/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://vifo@localhost/airflow
-    AIRFLOW__CELERY__BROKER_URL: redis://:@localhost:6379/11
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${USER}@host.docker.internal/airflow
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://${USER}@host.docker.internal/airflow
+    AIRFLOW__CELERY__BROKER_URL: redis://:@host.docker.internal:6379/11
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
     AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
     AIRFLOW_USER_HOME_DIR: /home/airflow
-
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
@@ -23,22 +22,21 @@ x-airflow-common:
   user: "${AIRFLOW_UID:-50000}:0"
 
 services:
-  x:
+  airflow-webserver:
     <<: *airflow-common
     command: webserver
     ports:
       - 8080:8080
-    network_mode: "host"
-    #healthcheck:
-      #test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
-      #interval: 10s
-      #timeout: 10s
-      #retries: 5
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
     restart: always
-    #depends_on:
-      ##<<: *airflow-common-depends-on
-      #airflow-init:
-        #condition: service_completed_successfully
+    depends_on:
+      #<<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
 
   airflow-scheduler:
     <<: *airflow-common
@@ -49,15 +47,16 @@ services:
       timeout: 10s
       retries: 5
     restart: always
-    #depends_on:
-      ##<<: *airflow-common-depends-on
-      #airflow-init:
-        #condition: service_completed_successfully
+    depends_on:
+      #<<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
 
   airflow-init:
     <<: *airflow-common
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     entrypoint: /bin/bash
-    # yamllint disable rule:line-length
     command:
       - -c
       - |
