@@ -30,3 +30,10 @@ Run both the webserver and scheduler,
     docker-compose up
     ```
 
+## Install
+To get up and running,
+- make
+- docker
+- docker-compose
+
+The changelog tool in use (https://github.com/git-chglog/git-chglog) can be used as a binary.
