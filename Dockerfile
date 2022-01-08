@@ -47,6 +47,7 @@ RUN conda install mkl celery redis
 FROM builder AS airflow
 COPY environment.yml environment.yml
 RUN conda env update --name base --file environment.yml
+RUN pip install celery redis
 
 ARG AIRFLOW_HOME=/opt/airflow
 ARG AIRFLOW_UID="50000"
@@ -81,7 +82,6 @@ RUN chmod a+x /entrypoint /clean-logs && \
 
 RUN usermod -g 0 airflow -G 0
 USER ${AIRFLOW_UID}
-# USER airflow
 
 EXPOSE 8080
 
