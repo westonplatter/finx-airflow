@@ -25,7 +25,7 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.dummy import DummyOperator
 
 with DAG(
-    dag_id='weston_example_bash_operator',
+    dag_id='finx_example_bash_operator',
     schedule_interval='0 0 * * *',
     start_date=datetime(2021, 1, 1),
     catchup=False,
