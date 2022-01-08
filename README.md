@@ -1,26 +1,32 @@
 # Finx Airflow
+A keep it simple/stupid dockerize airflow.
 
 ## Example
 
 ## How to get started
 
-```sh
-make docker.build.airflow
-```
+Build the image,
 
-```sh
-make docker.run.bash
+    ```sh
+    make docker.build
+    ```
 
-# within docker
-airflow db init
-```
+Test that the DB connection works, 
 
-In terminal 1,
-```sh
-make docker.run.webserver
-```
+    ```sh
+    docker-compose run airflow-cli db check
+    ```
 
-In terminal 2,
-```sh
-make docker.run.scheduler
-```
+Initialize the DB,
+
+    ```sh
+    docker-compose run airflow-cli db init
+    ```
+
+
+Run both the webserver and scheduler,
+
+    ```sh
+    docker-compose up
+    ```
+
