@@ -15,3 +15,7 @@ docker.build.__base:
 docker.build: docker.build.__base
 	docker build \
 		-f Dockerfile --target airflow --tag ${DOCKER_IMAGE_AIRFLOW} .
+
+
+changelog:
+	git-chglog -o CHANGELOG.md
