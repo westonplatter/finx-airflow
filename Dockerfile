@@ -1,49 +1,52 @@
 FROM conda/miniconda3 AS builder
 
 # Make sure noninteractive debian install is used and language variables set
-ENV DEBIAN_FRONTEND=noninteractive LANGUAGE=C.UTF-8 LANG=C.UTF-8 LC_ALL=C.UTF-8 \
-    LC_CTYPE=C.UTF-8 LC_MESSAGES=C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive \
+	LANGUAGE=C.UTF-8 \
+	LANG=C.UTF-8 \
+	LC_ALL=C.UTF-8 \
+    LC_CTYPE=C.UTF-8 \
+	LC_MESSAGES=C.UTF-8
 
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends \
-	apt-transport-https \
-	apt-utils \
-	build-essential \
-	ca-certificates \
-	curl \
-	dumb-init \
-	freetds-bin \
-	freetds-dev \
-	gnupg2 \
-	gosu \
-	ldap-utils \
-	libffi-dev \
-	libkrb5-dev \
-	libldap2-dev \
-	libpq-dev \
-	libsasl2-2 \
-	libsasl2-dev \
-	libsasl2-modules \
-	libssl-dev \
-	netcat \
-	openssh-client \
-	postgresql-client \
-	software-properties-common \
-	sqlite3 \
-	sudo \
-	unixodbc \
-	unixodbc-dev \
-	yarn \
+		apt-transport-https \
+		apt-utils \
+		build-essential \
+		ca-certificates \
+		curl \
+		dumb-init \
+		freetds-bin \
+		freetds-dev \
+		gnupg2 \
+		gosu \
+		ldap-utils \
+		libffi-dev \
+		libkrb5-dev \
+		libldap2-dev \
+		libpq-dev \
+		libsasl2-2 \
+		libsasl2-dev \
+		libsasl2-modules \
+		libssl-dev \
+		netcat \
+		openssh-client \
+		postgresql-client \
+		software-properties-common \
+		sqlite3 \
+		sudo \
+		unixodbc \
+		unixodbc-dev \
+		yarn \
     && apt-get autoremove -yqq --purge \
     && apt-get clean
 
 RUN conda update conda
-RUN conda install mkl
+RUN conda install mkl celery redis
 
 FROM builder AS airflow
 COPY environment.yml environment.yml
 RUN conda env update --name base --file environment.yml
-RUN pip install celery redis
 
 ARG AIRFLOW_HOME=/opt/airflow
 ARG AIRFLOW_UID="50000"
@@ -68,19 +71,17 @@ RUN adduser \
     #mkdir -pv "${AIRFLOW_HOME}/dags"; \
     #mkdir -pv "${AIRFLOW_HOME}/logs"; \
 
-#COPY --chown=airflow:root --from=airflow-build-image /root/.local "${AIRFLOW_USER_HOME_DIR}/.local"
 COPY --chown=airflow:root airflow/entrypoint.sh /entrypoint
 COPY --chown=airflow:root airflow/clean-logs.sh /clean-logs
 
 # Make /etc/passwd root-group-writeable so that user can be dynamically added by OpenShift
 # See https://github.com/apache/airflow/issues/9248
-
 RUN chmod a+x /entrypoint /clean-logs && \
     chmod g=u /etc/passwd
 
 RUN usermod -g 0 airflow -G 0
-#USER ${AIRFLOW_UID}
-USER airflow
+USER ${AIRFLOW_UID}
+# USER airflow
 
 EXPOSE 8080
 
