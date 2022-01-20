@@ -18,6 +18,11 @@
 
 """Example DAG demonstrating the usage of the BashOperator."""
 
+try:
+    from pendulum import DateTime as Pendulum
+except ImportError:
+    from pendulum import Pendulum
+
 from datetime import datetime, timedelta
 
 from airflow import DAG

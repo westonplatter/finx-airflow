@@ -8,5 +8,6 @@ dependencies:
   - psycopg2
   - pip
   - pip:
-    - apache-airflow >= 2.2
-    - celery
+    - 'apache-airflow[amazon,celery,dask,discord,docker,ftp,pandas,postgres,redis] >= 2.2'
+    #- dagster
+    - dagster_airflow
