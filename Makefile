@@ -13,12 +13,17 @@ DOCKER_IMAGE_AIRFLOW = finx-airflow:latest
 
 # docker.build: docker.build.__base
 docker.build:
-	docker build -f Dockerfile --tag ${DOCKER_IMAGE_AIRFLOW} .
-
+	docker build \
+		-f Dockerfile \
+		--tag ${DOCKER_IMAGE_AIRFLOW} \
+		.
 
 
 run.bash:
-	docker-compose run --entrypoint /bin/bash airflow-webserver
+	docker-compose run --entrypoint /bin/bash webserver
+
+run.cli:
+	docker-compose run airflow-webserver
 
 changelog:
 	git-chglog -o CHANGELOG.md

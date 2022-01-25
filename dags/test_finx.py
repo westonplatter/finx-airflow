@@ -18,16 +18,14 @@
 
 """Example DAG demonstrating the usage of the BashOperator."""
 
-try:
-    from pendulum import DateTime as Pendulum
-except ImportError:
-    from pendulum import Pendulum
 
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.bash_operator import BashOperator
+from airflow.operators.dummy_operator import DummyOperator
+# from airflow.operators.bash import BashOperator
+# from airflow.operators.dummy import DummyOperator
 
 with DAG(
     dag_id='finx_example_bash_operator',
