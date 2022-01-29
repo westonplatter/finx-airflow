@@ -1,4 +1,6 @@
+---
 version: '3.1'
+
 services:
   postgres:
     image: postgres:13
@@ -13,7 +15,7 @@ services:
       interval: 5s
       retries: 5
     restart: always
-       
+
   redis:
     image: redis:latest
     expose:
@@ -29,7 +31,8 @@ services:
     image: finx-airflow:latest
     environment:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor        
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - WAIT_FOR=postgres:5432
     depends_on:
       - postgres
@@ -39,19 +42,38 @@ services:
     ports:
       - "8080:8080"
     command: upgradedb_webserver
-      
+
   scheduler:
     image: finx-airflow:latest
     environment:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - WAIT_FOR=webserver:8080
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
     depends_on:
       - webserver
     volumes:
       - ./dags:/root/airflow/dags
       - ./logs:/root/airflow/logs
     command: scheduler
+
+  cli:
+    image: finx-airflow:latest
+    profiles:
+      - debug
+    environment:
+      CONNECTION_CHECK_MAX_COUNT: "0"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    # Workaround for entrypoint issue. See: https://github.com/apache/airflow/issues/16252
+    command:
+      - bash
+      - -c
+      - airflow
+    depends_on:
+      - postgres
+    volumes:
+      - ./dags:/root/airflow/dags
+      - ./logs:/root/airflow/logs
 
 volumes:
   postgres-db-volume:

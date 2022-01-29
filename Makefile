@@ -7,23 +7,22 @@
 DOCKER_IMAGE_BUILDER = finx-builder:latest
 DOCKER_IMAGE_AIRFLOW = finx-airflow:latest
 
-# docker.build.__base:
-# 	docker build \
-# 		-f Dockerfile --target builder --tag ${DOCKER_IMAGE_BUILDER} .
-
 # docker.build: docker.build.__base
-docker.build:
+build:
 	docker build \
 		-f Dockerfile \
 		--tag ${DOCKER_IMAGE_AIRFLOW} \
 		.
 
-
-run.bash:
-	docker-compose run --entrypoint /bin/bash webserver
-
-run.cli:
-	docker-compose run airflow-webserver
-
 changelog:
 	git-chglog -o CHANGELOG.md
+
+
+airflow.bash:
+	docker-compose run --entrypoint /bin/bash webserver
+	
+airflow.up:
+	docker-compose up -d webserver scheduler
+
+airflow.stop:
+	docker-compose stop webserver scheduler
