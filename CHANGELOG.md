@@ -1,6 +1,11 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+- **configs:** setup changelog tooling (westonplatter)
+- **docker:** miniconda from godatadriven ([#3](https://github.com/westonplatter/finx-airflow/issues/3)) (westonplatter)
+- **release:** add changelog tool. (westonplatter)
+
 
 <a name="0.0.1"></a>
 ## [0.0.1] - 2022-01-07
